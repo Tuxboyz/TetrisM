@@ -23,21 +23,16 @@ document.addEventListener("keydown", (event) => {
 
     const key = event.key.toLowerCase();
 
-    if ((key === "ArrowLeft" || key === "a") && pieceX > 0) {
+    if ((key === "arrowleft" || key === "a") && pieceX > 0) {
         pieceX--;
     }
 
-    if ((key === "ArrowRight" || key === "d") && pieceX <  BOARD_WIDTH - 1) {
+    if ((key === "arrowright" || key === "d") && pieceX <  BOARD_WIDTH - 1) {
         pieceX++;
     }
 
-    if ((key === "ArrowDown" || key === "s")) {
-
-        if (canMoveDown()) {
-            pieceY++;
-        } else {
-            lockPiece();
-        }
+    if ((key === "arrowdown" || key === "s")) {
+        moveDown();
     }
 
     render();
@@ -48,15 +43,8 @@ render();
 
 // Bucle que hace que la pieza baje cada segundo
 setInterval(() => {
-
-    if (canMoveDown()) {// Si puede moverse hacia abajo, la pieza baja
-        pieceY++;
-    } else {
-        lockPiece(); // Si no puede moverse hacia abajo, ponemos un 1 en el array del tablero y spawneamos la pieza arriba
-    }
-
+    moveDown();
     render();
-
 }, 1000);
 
 
@@ -134,6 +122,13 @@ function drawPiece() {
         pieceX = 4;
         pieceY = 0;
 
+    }
+    function moveDown() {
+        if (canMoveDown()) {// Si puede moverse hacia abajo, la pieza baja
+            pieceY++;
+        } else {
+            lockPiece(); // Si no puede moverse hacia abajo, ponemos un 1 en el array del tablero y spawneamos la pieza arriba
+        }
     }
 
     // Cogemos las coordenadas de la pieza y en el array del tablero 
