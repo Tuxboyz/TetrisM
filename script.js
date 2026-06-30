@@ -4,12 +4,13 @@ const ctx = canvas.getContext("2d");
 const BOARD_WIDTH = 10;
 const BOARD_HEIGHT = 20;
 
+//Array del tablero (formatos de 0 y 1)
 const board = Array.from(
     { length: BOARD_HEIGHT },
     () => Array(BOARD_WIDTH).fill(0)
 );
-
-const BLOCK_SIZE = 50;// Tamaño del bloque en píxeles(tambien hace que se vea mas grande o mas pequeño el tablero)
+// Tamaño del bloque en píxeles
+const BLOCK_SIZE = 50;
 // Posición inicial de la pieza
 let pieceX = 4;
 let pieceY = 0;
@@ -39,36 +40,39 @@ document.addEventListener("keydown", (event) => {
         }
     }
 
-    draw();
+    render();
 });
-//Llamamos a la funcion principal
-draw();
 
-// Hacemos que la pieza baje
+
+render();
+
+// Bucle que hace que la pieza baje cada segundo
 setInterval(() => {
 
-    if (canMoveDown()) {
+    if (canMoveDown()) {// Si puede moverse hacia abajo, la pieza baja
         pieceY++;
     } else {
-        lockPiece();
+        lockPiece(); // Si no puede moverse hacia abajo, ponemos un 1 en el array del tablero y spawneamos la pieza arriba
     }
 
-    draw();
+    render();
 
 }, 1000);
 
 
-// Fondo
-function draw() {
+// Imprimimos el tablero, la pieza azul estaticas y la pieza roja en movimiento
+function render() {
 
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    drawGrid();
-    drawBoard();
-    drawPiece();
+    drawGrid();//malla
+    drawBoard();//pieza azul estatica
+    drawPiece();//pieza roja en movimiento
+
 }
-// Color de la cuadrícula
+
+// Dibujamos la cuadrícula del tablero y elegimos el color
 function drawGrid() {
     ctx.strokeStyle = "#333";
 
@@ -86,46 +90,11 @@ function drawGrid() {
         ctx.stroke();
     }
 }
-// Dibujar la pieza
-function drawPiece() {
-    ctx.fillStyle = "red";
 
-    ctx.fillRect(
-        pieceX * BLOCK_SIZE,
-        pieceY * BLOCK_SIZE,
-        BLOCK_SIZE,
-        BLOCK_SIZE
-    );
-}
-    // Añadimos una nueva pieza
-    function spawnPiece() {
-        pieceX = 4;
-        pieceY = 0;
-    }
-    // Dibijamos la pieza para que se quede en el tablero
-    function lockPiece() {
-        board[pieceY][pieceX] = 1;
-        spawnPiece();
-    }
-    // Comprobamos si la pieza puede moverse hacia abajo
-    function canMoveDown() {
-
-    // Suelo
-    if (pieceY >= BOARD_HEIGHT - 1) {
-        return false;
-    }
-
-    // Bloque debajo
-    if (board[pieceY + 1][pieceX] === 1) {
-        return false;
-    }
-
-    return true;
-}
-// Dibujar el tablero y darle un array para poder dibujar las piezas que se han quedado en el tablero
+// Dibujamos la pieza ya ocupada en el array del tablero, para que se quede en el tablero y no se mueva
 function drawBoard() {
 
-    ctx.fillStyle = "cyan";
+    ctx.fillStyle = "blue";
 
     for (let y = 0; y < BOARD_HEIGHT; y++) {
 
@@ -143,3 +112,66 @@ function drawBoard() {
         }
     }
 }
+
+// Dibujar la pieza roja que se mueve
+function drawPiece() {
+    ctx.fillStyle = "red";
+
+    ctx.fillRect(
+        pieceX * BLOCK_SIZE,
+        pieceY * BLOCK_SIZE,
+        BLOCK_SIZE,
+        BLOCK_SIZE
+    );
+}
+
+
+
+
+    // Spawneamos la pieza arriba
+    function spawnPiece() {
+
+        pieceX = 4;
+        pieceY = 0;
+
+    }
+
+    // Cogemos las coordenadas de la pieza y en el array del tablero 
+    // le damos un 1 para marcar que esta ocupada y volvemos a spawnear la pieza
+    function lockPiece() {
+
+        board[pieceY][pieceX] = 1;
+        checkLines();
+        spawnPiece();
+
+    }
+
+    // Comprobamos si la pieza puede moverse hacia abajo
+    function canMoveDown() {
+
+        // Debajo ya el suelo?  False es que no puede moverse hacia abajo
+        if (pieceY >= BOARD_HEIGHT - 1) {
+            return false;
+        }
+
+        // Debajo pieza ocupada?  False es que ya hay una pieza ocupada
+        if (board[pieceY + 1][pieceX] === 1) {
+            return false;
+        }
+
+        return true;
+    }
+
+    function checkLines() {
+
+        for (let y = BOARD_HEIGHT - 1; y >= 0; y--) {
+            if (board[y].every(cell => cell === 1)) {
+                // Borrar la fila completa
+                board.splice(y, 1);
+                // Añadir una nueva fila vacía en la parte superior
+                board.unshift(Array(BOARD_WIDTH).fill(0));
+
+                y++; // Revisa la misma fila nuevamente después de eliminarla
+            }
+        }
+    }
